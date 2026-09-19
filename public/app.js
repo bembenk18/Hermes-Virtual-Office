@@ -6,28 +6,30 @@ document.addEventListener('DOMContentLoaded', () => {
   function addLog(msg) {
     const entry = document.createElement('div');
     entry.className = 'log-entry';
-    entry.textContent = msg;
+    const time = new Date().toLocaleTimeString();
+    entry.textContent = `[${time}] ${msg}`;
     logList.appendChild(entry);
     logList.scrollTop = logList.scrollHeight;
   }
 
   const es = new EventSource('/api/events');
-  es.onmessage = e => {
-    const data = JSON.parse(e.data);
-    if (data.type === 'init') initAgents(data.agents);
-    else if (data.type === 'agent_update') updateAgent(data);
-  };
+  es.addEventListener('init', e => {
+    const { agents } = JSON.parse(e.data);
+    initAgents(agents);
+  });
+  es.addEventListener('agent_update', e => {
+    updateAgent(JSON.parse(e.data));
+  });
 
   function initAgents(agents) {
-    agentSelect.innerHTML = '<option value="">-- Pilih Agen</option>';
+    agentSelect.innerHTML = '<option value="">-- Select Agent --</option>';
     agentListDiv.innerHTML = '';
     agents.forEach(agent => {
-      // dropdown
       const opt = document.createElement('option');
       opt.value = agent.id;
       opt.textContent = agent.name;
       agentSelect.appendChild(opt);
-      // card simple
+
       const card = document.createElement('div');
       card.id = `agent-${agent.id}`;
       card.className = 'agent-card';
@@ -46,22 +48,29 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateAgent(agent) {
     const card = document.getElementById(`agent-${agent.id}`);
     if (card) {
-      card.querySelector('.state-badge').className = `state-badge state-${agent.state}`;
-      card.querySelector('.state-badge').textContent = agent.state;
-      card.querySelector('.agent-log').textContent = agent.log;
+      const badge = card.querySelector('.state-badge');
+      if (badge) {
+        badge.className = `state-badge state-${agent.state}`;
+        badge.textContent = agent.state;
+      }
+      const log = card.querySelector('.agent-log');
+      if (log) {
+        log.textContent = agent.log;
+      }
     }
-    addLog(`Agent ${agent.name} ${agent.state}`);
+    addLog(`${agent.name}: ${agent.log}`);
   }
 
   window.dispatchTask = () => {
     const agentId = agentSelect.value;
-    const task = document.getElementById('task-input').value.trim();
+    const taskInput = document.getElementById('task-input');
+    const task = taskInput ? taskInput.value.trim() : '';
     if (!agentId || !task) return;
     fetch('/api/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ agentId, task })
     });
-    addLog(`Dispatched "${task}" to ${agentId}`);
+    if (taskInput) taskInput.value = '';
   };
 });

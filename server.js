@@ -75,7 +75,7 @@ const server = http.createServer((req, res) => {
       'Connection': 'keep-alive',
       'Access-Control-Allow-Origin': '*'
     });
-    res.write(`data: ${JSON.stringify({ type: 'init', agents })}\n\n`);
+    res.write('event: init\ndata: ' + JSON.stringify({ agents }) + '\n\n');
     sseClients.push(res);
 
     req.on('close', () => {
