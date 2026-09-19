@@ -61,7 +61,8 @@
 
   .header-tags {
     display: flex;
-    gap: 6px;
+    align-items: center;
+    gap: 8px;
     margin-left: auto;
   }
   .tag {
@@ -74,17 +75,31 @@
     border: 1px solid;
   }
   .tag-green { background: rgba(34,197,94,.1); color: var(--green); border-color: rgba(34,197,94,.3); }
-  .tag-blue  { background: rgba(59,130,246,.1); color: var(--accent); border-color: rgba(59,130,246,.3); }
+
+  .sound-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .sound-btn:hover { border-color: var(--accent); }
 
   /* Main Layout */
   main {
     display: grid;
-    grid-template-columns: 1fr 300px;
+    grid-template-columns: 1fr 340px;
     flex: 1;
     overflow: hidden;
   }
 
-  /* Canvas */
+  /* Canvas Container */
   #office-container {
     position: relative;
     background: #060c18;
@@ -101,7 +116,7 @@
     overflow: hidden;
   }
 
-  .section-title {
+  .section-header {
     padding: 10px 14px;
     font-size: 10px;
     font-weight: 700;
@@ -110,8 +125,23 @@
     color: var(--muted);
     border-bottom: 1px solid var(--border);
     background: var(--panel);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     flex-shrink: 0;
   }
+
+  .section-header button {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--accent);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .section-header button:hover { background: rgba(59,130,246,.1); }
 
   /* Agent Cards */
   #agent-list {
@@ -133,7 +163,7 @@
     transition: border-color .15s;
     font-size: 12px;
   }
-  .agent-card:hover { border-color: var(--accent); }
+  .agent-card:hover, .agent-card.selected { border-color: var(--accent); }
 
   .agent-row {
     display: flex;
@@ -153,8 +183,9 @@
 
   .agent-name { font-weight: 600; font-size: 12px; color: var(--text); }
   .agent-role { font-size: 10px; color: var(--muted); }
+  .agent-skills { font-size: 9px; color: var(--accent); opacity: 0.85; margin-top: 2px; }
   .agent-log  { font-size: 10px; color: var(--muted); font-style: italic;
-                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                 white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
 
   .state-badge {
     margin-left: auto;
@@ -171,6 +202,31 @@
   .state-EXECUTING { background: rgba(34,197,94,.15);   color: var(--green); }
   .state-DONE      { background: rgba(59,130,246,.15);  color: var(--accent); }
 
+  /* Add/Edit Form Panel */
+  #agent-form-panel {
+    border-top: 1px solid var(--border);
+    padding: 10px 12px;
+    background: #090e1a;
+    display: none;
+    flex-direction: column;
+    gap: 6px;
+  }
+  #agent-form-panel.active { display: flex; }
+
+  /* Input fields */
+  input[type="text"], select {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 9px;
+    color: var(--text);
+    font-size: 11px;
+    font-family: inherit;
+    outline: none;
+  }
+  input[type="text"]:focus, select:focus { border-color: var(--accent); }
+
   /* Dispatch Panel */
   #dispatch-panel {
     border-top: 1px solid var(--border);
@@ -180,22 +236,6 @@
     flex-direction: column;
     gap: 7px;
   }
-
-  #dispatch-panel select,
-  #dispatch-panel input {
-    width: 100%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 7px 10px;
-    color: var(--text);
-    font-size: 11px;
-    font-family: inherit;
-    outline: none;
-    transition: border-color .15s;
-  }
-  #dispatch-panel select:focus,
-  #dispatch-panel input:focus { border-color: var(--accent); }
 
   .btn-row { display: flex; gap: 6px; }
 
@@ -213,29 +253,149 @@
   .btn:hover { opacity: .85; }
   .btn-primary { background: var(--accent); color: #fff; }
   .btn-ghost   { background: var(--card); color: var(--muted); border: 1px solid var(--border); }
+  .btn-green   { background: var(--green); color: #000; }
 
-  /* Activity Log */
+  /* Sidebar Activity Log Controls & Filter */
   #activity-log {
     border-top: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    max-height: 130px;
+    max-height: 180px;
     flex-shrink: 0;
   }
+  .log-filter-bar {
+    padding: 6px 12px;
+    background: #090e1a;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .log-filter-bar select {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+  .filter-err-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .filter-err-btn.active {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--red);
+    border-color: var(--red);
+  }
+
   #log-list {
     overflow-y: auto;
     padding: 8px 12px;
     display: flex;
     flex-direction: column;
     gap: 3px;
+    min-height: 80px;
   }
   .log-entry {
     font-size: 10px;
     color: var(--muted);
     font-family: inherit;
+    word-break: break-word;
   }
+  .log-entry.is-error { color: var(--red); }
   .log-entry .log-time { color: var(--border); margin-right: 6px; }
   .log-entry .log-name { color: var(--accent); }
+
+  /* Modal: Agent Transcript Log */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  .modal-overlay.active { display: flex; }
+
+  .modal-box {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    width: 650px;
+    max-width: 90vw;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    overflow: hidden;
+  }
+
+  .modal-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #090e1a;
+  }
+  .modal-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .modal-subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-left: 6px;
+  }
+  .modal-close {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .modal-body {
+    padding: 12px 16px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #050811;
+  }
+
+  .transcript-container {
+    background: #000;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    color: #33ff55;
+    line-height: 1.4;
+    overflow-y: auto;
+    max-height: 400px;
+    white-space: pre-wrap;
+  }
+
+  .transcript-line {
+    margin-bottom: 2px;
+  }
+  .transcript-line.err {
+    color: var(--red);
+  }
+  .transcript-line.sys {
+    color: var(--accent);
+  }
 </style>
 </head>
 <body>
@@ -243,20 +403,43 @@
   <div class="status-dot"></div>
   <div class="logo"><span>⬡</span> Hermes Virtual Office</div>
   <div class="header-tags">
-    <span class="tag tag-green">4 Agents</span>
-    <span class="tag tag-blue">Live</span>
+    <button id="sound-toggle" class="sound-btn" onclick="toggleSound()">
+      <span id="sound-icon">🔊</span> <span id="sound-text">Sound: ON</span>
+    </button>
+    <span class="tag tag-green">Live</span>
   </div>
 </header>
+
 <main>
-  <div id="office-container"><canvas id="office"></canvas></div>
+  <div id="office-container">
+    <canvas id="office"></canvas>
+  </div>
+
   <aside>
-    <div class="section-title">Agents</div>
+    <div class="section-header">
+      <span>Agents (Click card for Transcript)</span>
+      <button onclick="toggleAgentForm()">+ Edit / Add Agent</button>
+    </div>
+
+    <!-- Agent Form (Add / Edit) -->
+    <div id="agent-form-panel">
+      <div style="font-size:10px;font-weight:700;color:var(--accent);margin-bottom:2px">Manage Agent & Skills</div>
+      <input id="form-agent-id" type="text" placeholder="Agent ID (e.g. dev, qa, scout)" />
+      <input id="form-agent-name" type="text" placeholder="Agent Name (e.g. Code Wizard)" />
+      <input id="form-agent-role" type="text" placeholder="Role (e.g. Software Engineer)" />
+      <input id="form-agent-skills" type="text" placeholder="Skills comma-separated (e.g. file_editing, web_search)" />
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="toggleAgentForm()">Cancel</button>
+        <button class="btn btn-green" onclick="saveAgent()">Save Agent</button>
+      </div>
+    </div>
+
     <div id="agent-list"></div>
 
     <div id="dispatch-panel">
-      <div class="section-title" style="padding:0 0 8px;border:none">Dispatch Task</div>
+      <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.1em">Dispatch Task</div>
       <select id="agent-select"></select>
-      <input id="task-input" type="text" placeholder="Describe the task…" />
+      <input id="task-input" type="text" placeholder="Describe task (or 'Create agent ...')" />
       <div class="btn-row">
         <button class="btn btn-ghost" onclick="clearTask()">Clear</button>
         <button class="btn btn-primary" onclick="dispatchTask()">▶ Run</button>
@@ -264,11 +447,38 @@
     </div>
 
     <div id="activity-log">
-      <div class="section-title">Activity Log</div>
+      <div class="section-header" style="border-bottom:none">Activity Log</div>
+      <div class="log-filter-bar">
+        <select id="log-filter-agent" onchange="renderLogs()">
+          <option value="ALL">All Agents</option>
+        </select>
+        <button id="filter-err-toggle" class="filter-err-btn" onclick="toggleErrorFilter()">Filter Errors</button>
+      </div>
       <div id="log-list"></div>
     </div>
   </aside>
 </main>
+
+<!-- Modal: Agent Transcript Log -->
+<div id="transcript-modal" class="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <span id="modal-agent-name" class="modal-title">Agent Transcript</span>
+        <span id="modal-agent-role" class="modal-subtitle">SubAgent</span>
+      </div>
+      <button class="modal-close" onclick="closeTranscriptModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;">
+        <span>Full activity history & terminal stdout/stderr:</span>
+        <button class="btn btn-ghost" style="padding:2px 8px;font-size:10px;" onclick="clearCurrentAgentLogs()">Clear Modal Logs</button>
+      </div>
+      <div id="transcript-container" class="transcript-container"></div>
+    </div>
+  </div>
+</div>
+
 <script src="app.js"></script>
 <script src="office.js"></script>
 </body>
