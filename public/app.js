@@ -11,49 +11,43 @@ document.addEventListener('DOMContentLoaded', () => {
     logList.scrollTop = logList.scrollHeight;
   }
 
-  const evtSource = new EventSource('/api/events');
-  evtSource.addEventListener('init', e => {
+  const es = new EventSource('/api/events');
+  es.onmessage = e => {
     const data = JSON.parse(e.data);
-    initAgents(data.agents);
-  });
-  evtSource.addEventListener('agent_update', e => {
-    const upd = JSON.parse(e.data);
-    updateAgent(upd);
-  });
+    if (data.type === 'init') initAgents(data.agents);
+    else if (data.type === 'agent_update') updateAgent(data);
+  };
 
   function initAgents(agents) {
-    agentListDiv.innerHTML = '';
     agentSelect.innerHTML = '<option value="">-- Pilih Agen</option>';
-    agents.forEach(a => {
-      renderAgentCard(a);
+    agentListDiv.innerHTML = '';
+    agents.forEach(agent => {
+      // dropdown
       const opt = document.createElement('option');
-      opt.value = a.id;
-      opt.textContent = a.name;
+      opt.value = agent.id;
+      opt.textContent = agent.name;
       agentSelect.appendChild(opt);
+      // card simple
+      const card = document.createElement('div');
+      card.id = `agent-${agent.id}`;
+      card.className = 'agent-card';
+      card.innerHTML = `
+        <div class="agent-header">
+          <div class="agent-avatar" style="background:#58a6ff;">${agent.id.charAt(0).toUpperCase()}</div>
+          <div class="agent-name">${agent.name}</div>
+          <div class="state-badge state-${agent.state}">${agent.state}</div>
+        </div>
+        <div class="agent-role">${agent.role}</div>
+        <div class="agent-log">${agent.log}</div>`;
+      agentListDiv.appendChild(card);
     });
-  }
-
-  function renderAgentCard(agent) {
-    const card = document.createElement('div');
-    card.className = 'agent-card';
-    card.id = `agent-${agent.id}`;
-    card.innerHTML = `
-      <div class="agent-header">
-        <div class="agent-avatar" style="background:#58a6ff;">${agent.id.charAt(0).toUpperCase()}</div>
-        <div class="agent-name">${agent.name}</div>
-        <div class="state-badge state-${agent.state}">${agent.state}</div>
-      </div>
-      <div class="agent-role">${agent.role}</div>
-      <div class="agent-log">${agent.log}</div>`;
-    agentListDiv.appendChild(card);
   }
 
   function updateAgent(agent) {
     const card = document.getElementById(`agent-${agent.id}`);
     if (card) {
-      const badge = card.querySelector('.state-badge');
-      badge.className = `state-badge state-${agent.state}`;
-      badge.textContent = agent.state;
+      card.querySelector('.state-badge').className = `state-badge state-${agent.state}`;
+      card.querySelector('.state-badge').textContent = agent.state;
       card.querySelector('.agent-log').textContent = agent.log;
     }
     addLog(`Agent ${agent.name} ${agent.state}`);
